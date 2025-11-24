@@ -169,25 +169,14 @@ function App() {
         {!isLoading && !error && entries.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {entries.map((entry) => (
-              <JournalEntryCard
-                key={entry.id}
-                entry={entry}
-                onEdit={handleOpenForm}
-                onDelete={handleDeleteEntry}
-              />
+              <JournalEntryCard />
             ))}
           </div>
         )}
       </main>
 
       {/* Journal Form Modal */}
-      {isFormOpen && (
-        <JournalForm
-          entry={currentEntry}
-          onClose={handleCloseForm}
-          onSave={handleSaveEntry}
-        />
-      )}
+      {isFormOpen && <JournalForm />}
     </div>
   );
 }
