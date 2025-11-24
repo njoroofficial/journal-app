@@ -124,37 +124,20 @@ function App() {
         </div>
       </header>
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
-        {/* Loading State */}
-        {isLoading && (
-          <div className="text-center p-12">
-            <Loader2
-              size={48}
-              className="mx-auto mb-4 animate-spin text-blue-600"
-            />
-            <h3 className="text-xl font-semibold text-gray-700 dark:text-gray-300">
-              Loading journal entries...
-            </h3>
+        {loading && (
+          <div className="flex flex-col items-center justify-center h-64 text-gray-500 dark:text-gray-400">
+            <Loader2 size={32} className="animate-spin text-blue-500 mb-4" />
+            <p className="text-lg">Loading your previous thoughts...</p>
           </div>
         )}
 
-        {/* Error State */}
-        {error && !isLoading && (
-          <div className="text-center p-12 border-4 border-dashed border-red-200 dark:border-red-800 rounded-xl">
-            <AlertCircle size={48} className="mx-auto mb-4 text-red-600" />
-            <h3 className="text-xl font-semibold text-red-600 dark:text-red-400">
-              Error Loading Entries
-            </h3>
-            <p className="mt-2 text-gray-600 dark:text-gray-400">{error}</p>
-            <button
-              onClick={() => window.location.reload()}
-              className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
-            >
-              Retry
-            </button>
+        {error && (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-xl shadow-md my-4 dark:bg-red-900 dark:border-red-700 dark:text-red-300">
+            <p className="font-bold">Error:</p>
+            <p className="text-sm">{error}</p>
           </div>
         )}
 
-        {/* Empty State */}
         {!isLoading && !error && entries.length === 0 && (
           <div className="text-center p-12 border-4 border-dashed border-gray-200 dark:border-gray-700 rounded-xl text-gray-500 dark:text-gray-400">
             <BookOpen size={48} className="mx-auto mb-4" />
@@ -165,18 +148,21 @@ function App() {
           </div>
         )}
 
-        {/* Entries Grid */}
         {!isLoading && !error && entries.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {entries.map((entry) => (
-              <JournalEntryCard />
+              <JournalEntryCard
+                key={entry.id}
+                entry={entry}
+                onEdit={handleOpenForm}
+                onDelete={handleDeleteEntry}
+                isImportant={importantEntries.has(entry.id)}
+                onToggleImportant={handleToggleImportant}
+              />
             ))}
           </div>
         )}
       </main>
-
-      {/* Journal Form Modal */}
-      {isFormOpen && <JournalForm />}
     </div>
   );
 }
