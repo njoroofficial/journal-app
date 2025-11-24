@@ -1,6 +1,5 @@
-import { BookOpen, Plus, Loader2, AlertCircle } from "lucide-react";
+import { BookOpen, Plus, Loader2 } from "lucide-react";
 import { useState, useEffect } from "react";
-import JournalForm from "./components/JournalForm";
 import JournalEntryCard from "./components/JournalEntryCard";
 import { fetchWithRetry } from "./lib/api-service";
 
@@ -15,10 +14,10 @@ interface JournalEntry {
 
 function App() {
   const [entries, setEntries] = useState<JournalEntry[]>([]);
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const [currentEntry, setCurrentEntry] = useState<JournalEntry | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  // State to track locally marked important entries
+  const [importantEntries, setImportantEntries] = useState(new Set<number>());
 
   // Fetch initial entries
   useEffect(() => {
@@ -40,55 +39,22 @@ function App() {
     fetchEntries();
   }, []);
 
+  // Local Importance Toggle Handler
+  const handleToggleImportant = (id: number) => {
+    setImportantEntries((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(id)) {
+        newSet.delete(id);
+      } else {
+        newSet.add(id);
+      }
+      return newSet;
+    });
+  };
+
   // CRUD Handlers
 
-  const handleOpenForm = (entry: JournalEntry | null = null) => {
-    setCurrentEntry(entry);
-    setIsFormOpen(true);
-  };
-
-  const handleCloseForm = () => {
-    setIsFormOpen(false);
-    setCurrentEntry(null);
-  };
-
-  const handleSaveEntry = async (newEntry: JournalEntry, isNew: boolean) => {
-    if (isNew) {
-      // CREATE: POST request
-      const createdEntry = await fetchWithRetry(API_BASE_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        // Mock a unique ID for local state to avoid key collisions with existing API data
-        body: JSON.stringify({
-          ...newEntry,
-          id: entries.length + 101,
-          userId: 1,
-        }),
-      });
-      // Prepend the new entry to state
-      setEntries((prev) => [createdEntry, ...prev]);
-    } else {
-      // UPDATE: PUT request
-      const updatedEntry = await fetchWithRetry(
-        `${API_BASE_URL}/${newEntry.id}`,
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(newEntry),
-        }
-      );
-      // Update the state with the new entry data
-      setEntries((prev) =>
-        prev.map((e) => (e.id === updatedEntry.id ? updatedEntry : e))
-      );
-    }
-  };
-
   const handleDeleteEntry = async (id: number) => {
-    if (!window.confirm("Are you sure you want to delete this entry?")) {
-      return;
-    }
-
     try {
       // DELETE request
       await fetchWithRetry(`${API_BASE_URL}/${id}`, {
@@ -114,7 +80,6 @@ function App() {
           </div>
           {/* button to handle to new form entry */}
           <button
-            onClick={() => handleOpenForm(null)}
             className="inline-flex items-center px-4 py-2 bg-blue-600 text-white font-semibold rounded-full shadow-lg hover:bg-blue-700 transition duration-300 transform hover:scale-[1.02] active:scale-95 text-sm md:text-base disabled:opacity-50"
             aria-label="Create New Entry"
           >
@@ -124,7 +89,7 @@ function App() {
         </div>
       </header>
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
-        {loading && (
+        {isLoading && (
           <div className="flex flex-col items-center justify-center h-64 text-gray-500 dark:text-gray-400">
             <Loader2 size={32} className="animate-spin text-blue-500 mb-4" />
             <p className="text-lg">Loading your previous thoughts...</p>
@@ -154,7 +119,7 @@ function App() {
               <JournalEntryCard
                 key={entry.id}
                 entry={entry}
-                onEdit={handleOpenForm}
+                onEdit={() => {}}
                 onDelete={handleDeleteEntry}
                 isImportant={importantEntries.has(entry.id)}
                 onToggleImportant={handleToggleImportant}
