@@ -2,6 +2,7 @@ import { BookOpen, Plus, Loader2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import JournalEntryCard from "./components/JournalEntryCard";
 import { fetchWithRetry } from "./lib/api-service";
+import JournalForm from "./components/JournalForm";
 
 const API_BASE_URL = "https://jsonplaceholder.typicode.com/posts";
 
@@ -16,6 +17,8 @@ function App() {
   const [entries, setEntries] = useState<JournalEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [currentEntry, setCurrentEntry] = useState<JournalEntry | null>(null);
   // State to track locally marked important entries
   const [importantEntries, setImportantEntries] = useState(new Set<number>());
 
@@ -54,6 +57,48 @@ function App() {
 
   // CRUD Handlers
 
+  const handleOpenForm = (entry: JournalEntry | null = null) => {
+    setCurrentEntry(entry);
+    setIsFormOpen(true);
+  };
+
+  const handleCloseForm = () => {
+    setIsFormOpen(false);
+    setCurrentEntry(null);
+  };
+
+  const handleSaveEntry = async (newEntry: JournalEntry, isNew: boolean) => {
+    if (isNew) {
+      // CREATE: POST request
+      const createdEntry = await fetchWithRetry(API_BASE_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        // Mock a unique ID for local state to avoid key collisions with existing API data
+        body: JSON.stringify({
+          ...newEntry,
+          id: entries.length + 101,
+          userId: 1,
+        }),
+      });
+      // Prepend the new entry to state
+      setEntries((prev) => [createdEntry, ...prev]);
+    } else {
+      // UPDATE: PUT request
+      const updatedEntry = await fetchWithRetry(
+        `${API_BASE_URL}/${newEntry.id}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(newEntry),
+        }
+      );
+      // Update the state with the new entry data
+      setEntries((prev) =>
+        prev.map((e) => (e.id === updatedEntry.id ? updatedEntry : e))
+      );
+    }
+  };
+
   const handleDeleteEntry = async (id: number) => {
     try {
       // DELETE request
@@ -80,7 +125,9 @@ function App() {
           </div>
           {/* button to handle to new form entry */}
           <button
+            onClick={() => handleOpenForm(null)}
             className="inline-flex items-center px-4 py-2 bg-blue-600 text-white font-semibold rounded-full shadow-lg hover:bg-blue-700 transition duration-300 transform hover:scale-[1.02] active:scale-95 text-sm md:text-base disabled:opacity-50"
+            disabled={isLoading}
             aria-label="Create New Entry"
           >
             <Plus size={20} className="mr-1" />
@@ -119,7 +166,7 @@ function App() {
               <JournalEntryCard
                 key={entry.id}
                 entry={entry}
-                onEdit={() => {}}
+                onEdit={handleOpenForm}
                 onDelete={handleDeleteEntry}
                 isImportant={importantEntries.has(entry.id)}
                 onToggleImportant={handleToggleImportant}
@@ -128,6 +175,14 @@ function App() {
           </div>
         )}
       </main>
+      {/* Journal Form Modal */}
+      {isFormOpen && (
+        <JournalForm
+          entry={currentEntry}
+          onClose={handleCloseForm}
+          onSave={handleSaveEntry}
+        />
+      )}
     </div>
   );
 }
