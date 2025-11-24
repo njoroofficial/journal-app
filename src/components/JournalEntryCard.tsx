@@ -1,6 +1,7 @@
 import { Edit, Loader2, MessageSquare, Star, Trash2 } from "lucide-react";
 import { useState } from "react";
 
+// defining types
 interface JournalEntry {
   id: number;
   title: string;
@@ -24,7 +25,7 @@ const JournalEntryCard = ({
   onToggleImportant,
 }: JournalEntryCardProps) => {
   const [isDeleting, setIsDeleting] = useState(false);
-  const [showConfirm, setShowConfirm] = useState(false); // Custom state for deletion confirmation
+  const [showConfirm, setShowConfirm] = useState(false);
 
   const handleDelete = async () => {
     // Start deletion
@@ -34,13 +35,12 @@ const JournalEntryCard = ({
       await onDelete(entry.id);
     } catch (error) {
       console.error("Failed to delete:", error);
-      // In a real app, this error would be communicated via a global toast notification.
     } finally {
       setIsDeleting(false);
     }
   };
 
-  // Determine card style based on importance
+  // card style based on importance
   const cardClasses = `border rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 p-6 flex flex-col justify-between relative ${
     isImportant
       ? "bg-yellow-50 dark:bg-yellow-900/50 border-yellow-400 dark:border-yellow-700 ring-4 ring-yellow-200 dark:ring-yellow-900"
@@ -79,7 +79,7 @@ const JournalEntryCard = ({
       </div>
 
       <div className="flex space-x-3 mt-4 pt-4 border-t border-gray-100 dark:border-gray-600 relative">
-        {/* Custom Confirmation Overlay (Replaces window.confirm) */}
+        {/* Custom Confirmation Overlay */}
         {showConfirm && (
           <div className="absolute inset-x-0 bottom-full mb-2 p-3 bg-red-50 dark:bg-red-900 rounded-lg shadow-xl border border-red-200 dark:border-red-700 z-20">
             <p className="text-sm font-medium text-red-800 dark:text-red-100 mb-2">

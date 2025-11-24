@@ -6,6 +6,7 @@ import JournalForm from "./components/JournalForm";
 
 const API_BASE_URL = "https://jsonplaceholder.typicode.com/posts";
 
+// types
 interface JournalEntry {
   id: number;
   title: string;
@@ -80,7 +81,7 @@ function App() {
           userId: 1,
         }),
       });
-      // Prepend the new entry to state
+      // Preappend the new entry to state
       setEntries((prev) => [createdEntry, ...prev]);
     } else {
       // UPDATE: PUT request
@@ -136,6 +137,7 @@ function App() {
         </div>
       </header>
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+        {/* loading state */}
         {isLoading && (
           <div className="flex flex-col items-center justify-center h-64 text-gray-500 dark:text-gray-400">
             <Loader2 size={32} className="animate-spin text-blue-500 mb-4" />
@@ -143,6 +145,7 @@ function App() {
           </div>
         )}
 
+        {/* error state */}
         {error && (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-xl shadow-md my-4 dark:bg-red-900 dark:border-red-700 dark:text-red-300">
             <p className="font-bold">Error:</p>

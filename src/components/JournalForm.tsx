@@ -1,6 +1,7 @@
 import { Loader2, Send, X } from "lucide-react";
 import { useState } from "react";
 
+// defining types
 interface JournalEntry {
   id: number;
   title: string;
@@ -22,7 +23,7 @@ const JournalForm = ({ entry, onClose, onSave }: JournalFormProps) => {
   const isNew = !entry;
 
   // Client-side validation is enforced by the 'required' attribute on inputs,
-  // and the final submission check here.
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!title.trim() || !body.trim()) return;
@@ -30,12 +31,12 @@ const JournalForm = ({ entry, onClose, onSave }: JournalFormProps) => {
     setFormError(null);
     setIsSaving(true);
 
-    // Prepare payload (using mock userId=1 for JSONPlaceholder POST/PUT requests)
+    // using mock userId=1 for JSONPlaceholder POST/PUT requests)
     const payload = {
       title: title.trim(),
       body: body.trim(),
       userId: entry ? entry.userId : 1,
-      id: entry ? entry.id : Date.now(), // Use existing ID or mock a new one
+      id: entry ? entry.id : Date.now(),
     };
 
     try {
